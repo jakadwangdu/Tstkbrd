@@ -1,0 +1,177 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Aura Keyboard API",
+    "version": "1.0.0",
+    "description": "Telemetry, clipboard history, layout and emoji endpoints for Aura Keyboard OS."
+  },
+  "servers": [{ "url": "http://localhost:8787/v1" }],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Service health",
+        "responses": {
+          "200": {
+            "description": "Service is up",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "ok": { "type": "boolean" }, "uptimeSeconds": { "type": "integer" } } } } }
+          }
+        }
+      }
+    },
+    "/keystroke": {
+      "post": {
+        "summary": "Record one keystroke",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["key"], "properties": { "key": { "type": "string", "minLength": 1, "maxLength": 8 } } } } }
+        },
+        "responses": {
+          "202": { "description": "Accepted", "content": { "application/json": { "schema": { "type": "object", "properties": { "accepted": { "type": "boolean" }, "keystrokes": { "type": "integer" } } } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/telemetry": {
+      "get": {
+        "summary": "Typing speed, counts, layout and recent requests",
+        "responses": {
+          "200": { "description": "Telemetry snapshot", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Telemetry" } } } }
+        }
+      }
+    },
+    "/clips": {
+      "get": {
+        "summary": "List clipboard history, pinned first",
+        "responses": {
+          "200": { "description": "Clips", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Clip" } } } } }
+        }
+      },
+      "post": {
+        "summary": "Add a clip",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["text"], "properties": { "text": { "type": "string", "maxLength": 2000 } } } } }
+        },
+        "responses": {
+          "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Clip" } } } },
+          "200": { "description": "Clip already exists", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Clip" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      },
+      "delete": {
+        "summary": "Clear all unpinned clips",
+        "parameters": [{ "name": "unpinned", "in": "query", "required": true, "schema": { "type": "boolean", "enum": [true] } }],
+        "responses": {
+          "204": { "description": "Cleared" },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/clips/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+      "patch": {
+        "summary": "Pin or unpin a clip",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "properties": { "pinned": { "type": "boolean" } } } } }
+        },
+        "responses": {
+          "200": { "description": "Updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Clip" } } } },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a clip",
+        "responses": {
+          "204": { "description": "Deleted" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/layout": {
+      "get": {
+        "summary": "Current keyboard layout",
+        "responses": {
+          "200": { "description": "Layout", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Layout" } } } }
+        }
+      },
+      "put": {
+        "summary": "Update keyboard layout",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Layout" } } }
+        },
+        "responses": {
+          "200": { "description": "Saved layout", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Layout" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/emoji": {
+      "get": {
+        "summary": "Quick reactions and emoji categories",
+        "responses": {
+          "200": {
+            "description": "Emoji pack",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "quick": { "type": "array", "items": { "type": "string" } },
+                    "categories": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "string" } } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Clip": {
+        "type": "object",
+        "properties": { "id": { "type": "integer" }, "text": { "type": "string" }, "pinned": { "type": "boolean" } }
+      },
+      "Layout": {
+        "type": "object",
+        "properties": {
+          "kbWidth": { "type": "number", "minimum": 78, "maximum": 100, "description": "Keyboard width in percent" },
+          "rowGap": { "type": "number", "minimum": 4, "maximum": 18, "description": "Vertical row spacing in px" },
+          "keyHeight": { "type": "number", "minimum": 32, "maximum": 54, "description": "Keycap height in px" },
+          "keyScaleX": { "type": "number", "minimum": 82, "maximum": 106, "description": "Keycap width scale in percent" },
+          "dock": { "type": "string", "enum": ["left", "center", "right"] }
+        }
+      },
+      "Telemetry": {
+        "type": "object",
+        "properties": {
+          "wpm": { "type": "integer" },
+          "keystrokes": { "type": "integer" },
+          "clips": { "type": "integer" },
+          "layout": { "$ref": "#/components/schemas/Layout" },
+          "recentRequests": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "at": { "type": "integer" },
+                "method": { "type": "string" },
+                "path": { "type": "string" },
+                "status": { "type": "integer" },
+                "ms": { "type": "number" }
+              }
+            }
+          }
+        }
+      },
+      "Error": { "type": "object", "properties": { "error": { "type": "string" } } }
+    },
+    "responses": {
+      "BadRequest": { "description": "Invalid input", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "NotFound": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+    }
+  }
+}
