@@ -1,9 +1,0 @@
-{
-  "name": "aura-keyboard-api",
-  "version": "1.0.0",
-  "description": "Backend for Aura Keyboard OS",
-  "main": "aura-keyboard-api.js",
-  "scripts": { "start": "node aura-keyboard-api.js" },
-  "dependencies": { "express": "^4.19.2" },
-  "license": "MIT"
-}
