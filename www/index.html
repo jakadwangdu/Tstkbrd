@@ -1,5 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>try{var c=window.Capacitor;if(c&&(!c.isNativePlatform||c.isNativePlatform()))document.documentElement.classList.add("native")}catch(e){}</script>
 <title>Aura Keyboard OS</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <style>
@@ -159,8 +164,23 @@ button{font:inherit;color:inherit}
 .btn:focus-visible{outline:2px solid #8a5a1f;outline-offset:2px}
 .run{margin:12px 0 0;font-size:12.5px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.kb,.toast,.key.space .lbl{transition:none}}
+
+[hidden]{display:none!important}
+/* Native app mode: the Capacitor shell adds .native, so the keyboard fills the screen */
+.native,.native body{background:var(--paper)}
+.native body{padding:0}
+.native .studio{display:block;max-width:none}
+.native .console{display:none}
+.native .phone{max-width:none;margin:0;border-radius:0;padding:0;background:var(--paper);box-shadow:none}
+.native .inner{height:100vh;height:100dvh;min-height:0;border:0;border-radius:0;padding-top:env(safe-area-inset-top,0px)}
+.native .island{display:none}
+.native .editor{padding-top:10px}
+.native .kb-dock{padding-bottom:max(6px,env(safe-area-inset-bottom,0px))}
+.native .toast{top:calc(env(safe-area-inset-top,0px) + 14px)}
 </style>
 
+</head>
+<body>
 <main class="studio">
   <div>
     <div class="phone">
@@ -1380,3 +1400,6 @@ ed.setSelectionRange(ed.value.length,ed.value.length); queue();
 rec('GET','/v1/layout',200,'0.7'); rec('GET','/v1/clips',200,'0.9'); rec('GET','/v1/emoji',200,'0.8');
 })();
 </script>
+
+</body>
+</html>
