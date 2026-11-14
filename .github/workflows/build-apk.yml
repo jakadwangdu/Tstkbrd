@@ -26,7 +26,7 @@ jobs:
           set -euo pipefail
           java -version
           echo "JAVA_HOME=${JAVA_HOME:-unset}"
-          MAJOR="$(java -version 2>&1 | head -n 1 | sed -E 's/.*"([0-9]+)[.".*/\1/')"
+          MAJOR="$(java -version 2>&1 | awk -F'[".]' '/version/ {print $2; exit}')"
           case "$MAJOR" in
             ''|*[!0-9]*) echo "::error::Could not detect the Java version"; exit 1 ;;
           esac
